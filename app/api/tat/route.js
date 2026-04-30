@@ -22,13 +22,13 @@ export async function GET() {
     const data = [];
 
     for (const row of poRows) {
-      const skuId = (row['Platform SKU ID'] || '').trim();
+      const skuId = (row['platform sku id'] || '').trim();
       const platform = (row['channel'] || '').trim();
-      const poId = (row['PO ID'] || '').trim();
-      const reqDateStr = (row['Request Date'] || '').trim();
-      const dispDateStr = (row['PO dispatch date'] || '').trim();
+      const poId = (row['po id'] || '').trim();
+      const reqDateStr = (row['request date'] || '').trim();
+      const dispDateStr = (row['po dispatch date'] || '').trim();
       const totalQty = parseNum(row['total qty']);
-      const shippedQty = parseNum(row['Actual shipped qty']);
+      const shippedQty = parseNum(row['actual shipped qty']);
 
       if (!skuId || !platform || !reqDateStr) continue;
       if (!isTargetPlatform(platform)) continue;
