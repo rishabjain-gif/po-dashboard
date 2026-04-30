@@ -29,7 +29,7 @@ export async function GET() {
       const skuName = (row['item_name'] || '').trim();
       const platform = (row['platform'] || '').trim();
       const date = parseDate(row['date']);
-      const qty = parseNum(row['Sum of qty_sold']);
+      const qty = parseNum(row['sum of qty_sold']);
 
       if (!skuId || !platform || !date || qty <= 0) continue;
       if (!isTargetPlatform(platform)) continue;
@@ -49,9 +49,9 @@ export async function GET() {
     const poMap = {};
 
     for (const row of poRows) {
-      const skuId = (row['Platform SKU ID'] || '').trim();
+      const skuId = (row['platform sku id'] || '').trim();
       const platform = (row['channel'] || '').trim();
-      const reqDateStr = (row['Request Date'] || '').trim();
+      const reqDateStr = (row['request date'] || '').trim();
       const qty = parseNum(row['total qty']);
 
       if (!skuId || !platform || !reqDateStr) continue;
