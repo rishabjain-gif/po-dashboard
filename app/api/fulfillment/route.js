@@ -24,11 +24,11 @@ export async function GET() {
     const platformDisplay = {};
 
     for (const row of poRows) {
-      const skuId = (row['Platform SKU ID'] || '').trim();
+      const skuId = (row['platform sku id'] || '').trim();
       const platform = (row['channel'] || '').trim();
-      const reqDateStr = (row['Request Date'] || '').trim();
+      const reqDateStr = (row['request date'] || '').trim();
       const ordered = parseNum(row['total qty']);
-      const shipped = parseNum(row['Actual shipped qty']);
+      const shipped = parseNum(row['actual shipped qty']);
 
       if (!skuId || !platform || !reqDateStr) continue;
       if (!isTargetPlatform(platform)) continue;
