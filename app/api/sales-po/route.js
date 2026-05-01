@@ -50,7 +50,7 @@ export async function GET() {
     const poMap = {};
 
     for (const row of poRows) {
-      const skuId = (row['platform sku id'] || '').trim();
+      const skuId = (row['platform sku id'] || '').trim().toUpperCase();
       const platform = (row['channel'] || '').trim();
       const reqDateStr = (row['request date'] || '').trim();
       const qty = parseNum(row['total qty']);
