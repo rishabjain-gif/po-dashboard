@@ -11,7 +11,7 @@ export async function GET() {
   try {
     const [salesRows, poRows] = await Promise.all([fetchSalesRows(), fetchPORows()]);
 
-    // Determine the 5 weeks to show (most recent NUM_WEEKS weeks up to today)
+    // Determine the 5 weeks to show (most rcent NUM_WEEKS weeks up to today)
     const today = new Date();
     const currentWeekIdx = Math.max(0, getWeekIndex(today, FIRST_WEEK_START));
     const startWeekIdx = Math.max(0, currentWeekIdx - (NUM_WEEKS - 1));
@@ -31,8 +31,10 @@ export async function GET() {
       const date = parseDate(row['date']);
       const qty = parseNum(row['sum of qty_sold']);
 
-      if (!skuId || !platform || !date || qty <= 0) continue;
+      if (!skuId || !platform) continue;
       if (!isTargetPlatform(platform)) continue;
+              if (skuName) skuNames[skuId] = skuName;
+              if (!date || qty <= 0) continue;
 
       const wIdx = getWeekIndex(date, FIRST_WEEK_START);
       if (!weekIndices.includes(wIdx)) continue;
@@ -41,7 +43,6 @@ export async function GET() {
       const key = `${skuId}|||${norm}`;
       if (!salesMap[key]) salesMap[key] = {};
       salesMap[key][wIdx] = (salesMap[key][wIdx] || 0) + qty;
-      if (skuName) skuNames[skuId] = skuName;
       platformDisplay[norm] = getDisplayPlatform(platform);
     }
 
