@@ -25,7 +25,7 @@ export async function GET() {
     const platformDisplay = {};
 
     for (const row of salesRows) {
-      const skuId = (row['item_id'] || '').trim();
+      const skuId = (row['item_id'] || '').trim().toUpperCase();
       const skuName = (row['item_name'] || '').trim();
       const platform = (row['platform'] || '').trim();
       const date = parseDate(row['date']);
