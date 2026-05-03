@@ -24,8 +24,17 @@ export default function FulfillmentTab() {
     const q = search.toLowerCase();
     const matchQ = !search || row.skuName.toLowerCase().includes(q) || row.skuId.toLowerCase().includes(q);
     const matchP = platFilter === 'All' || row.platform === platFilter;
-    return matchQ && matchP;
+          const totalOrdered = row.weeks.reduce((sum, w) => sum + (w.ordered || 0), 0);
+          const totalShipped = row.weeks.reduce((sum, w) => sum + (w.shipped || 0), 0);
+          const overallFill = totalOrdered > 0 ? (totalShipped / totalOrdered) * 100 : null;
+          const matchFill = overallFill !== null && overallFill < 95;
+    return matchQ && matchP && matchFill;
   });
+    .sort((a, b) => {
+          const totA = a.weeks.reduce((s, w) => s + (w.ordered || 0), 0);
+          const totB = b.weeks.reduce((s, w) => s + (w.ordered || 0), 0);
+          return totB - totA;
+    });
 
   return (
     <div>
