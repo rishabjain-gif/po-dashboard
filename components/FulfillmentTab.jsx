@@ -29,8 +29,7 @@ export default function FulfillmentTab() {
           const overallFill = totalOrdered > 0 ? (totalShipped / totalOrdered) * 100 : null;
           const matchFill = overallFill !== null && overallFill < 95;
     return matchQ && matchP && matchFill;
-  });
-    .sort((a, b) => {
+  }).sort((a, b) => {
           const totA = a.weeks.reduce((s, w) => s + (w.ordered || 0), 0);
           const totB = b.weeks.reduce((s, w) => s + (w.ordered || 0), 0);
           return totB - totA;
