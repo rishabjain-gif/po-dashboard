@@ -3,14 +3,13 @@ import {
   parseDate, isTargetPlatform, getDisplayPlatform,
   parseNum, calcTATDeadline, diffDays, fmtDateDisp,
 } from '@/lib/dataUtils';
-import { fetchPORows, fetchSalesRows, buildSkuNameMap } from '@/lib/sheets';
+import { fetchPORows, fetchSalesRows } from '@/lib/sheets';
 
 export const revalidate = 300;
 
 export async function GET() {
   try {
-    const [salesRows, poRows] = await Promise.all([fetchSalesRows(), fetchPORows()]);
-    const skuNameMap = buildSkuNameMap(salesRows);
+    const [, poRows] = await Promise.all([fetchSalesRows(), fetchPORows()]);
 
     const today = new Date();
     const firstDay = new Date(
@@ -19,15 +18,16 @@ export async function GET() {
       FIRST_WEEK_START.getDate()
     );
 
-    const data = [];
+    // Map: poId → aggregated PO record
+    const poMap = new Map();
 
     for (const row of poRows) {
-      const skuId = (row['platform sku id'] || '').trim();
+      const skuId   = (row['platform sku id'] || '').trim();
       const platform = (row['channel'] || '').trim();
-      const poId = (row['po id'] || '').trim();
-      const reqDateStr = (row['request date'] || '').trim();
+      const poId    = (row['po id'] || '').trim();
+      const reqDateStr  = (row['request date'] || '').trim();
       const dispDateStr = (row['po dispatch date'] || '').trim();
-      const totalQty = parseNum(row['total qty']);
+      const totalQty   = parseNum(row['total qty']);
       const shippedQty = parseNum(row['actual shipped qty']);
 
       if (!skuId || !platform || !reqDateStr) continue;
@@ -40,7 +40,7 @@ export async function GET() {
       const reqNorm = new Date(requestDate.getFullYear(), requestDate.getMonth(), requestDate.getDate());
       if (reqNorm < firstDay) continue;
 
-      const deadline = calcTATDeadline(requestDate);
+      const deadline     = calcTATDeadline(requestDate);
       const dispatchDate = dispDateStr ? parseDate(dispDateStr) : null;
 
       let status, actualTAT, daysOverdue;
@@ -57,21 +57,29 @@ export async function GET() {
         status = overdue > 0 ? 'overdue_pending' : 'pending';
       }
 
-      data.push({
-        poId,
-        skuId,
-        skuName: skuNameMap[skuId] || skuId,
-        platform: getDisplayPlatform(platform),
-        requestDate: fmtDateDisp(requestDate),
-        dispatchDate: dispatchDate ? fmtDateDisp(dispatchDate) : null,
-        deadline: fmtDateDisp(deadline),
-        actualTAT,
-        status,
-        daysOverdue,
-        totalQty,
-        shippedQty,
-      });
+      if (poMap.has(poId)) {
+        const existing = poMap.get(poId);
+        existing.totalQty   += totalQty;
+        existing.shippedQty += shippedQty;
+        existing.skuCount   += 1;
+      } else {
+        poMap.set(poId, {
+          poId,
+          platform: getDisplayPlatform(platform),
+          requestDate:  fmtDateDisp(requestDate),
+          dispatchDate: dispatchDate ? fmtDateDisp(dispatchDate) : null,
+          deadline:     fmtDateDisp(deadline),
+          actualTAT,
+          status,
+          daysOverdue,
+          totalQty,
+          shippedQty,
+          skuCount: 1,
+        });
+      }
     }
+
+    const data = [...poMap.values()];
 
     // Sort: overdue_pending → late → pending → on_time
     const ORDER = { overdue_pending: 0, late: 1, pending: 2, on_time: 3 };
