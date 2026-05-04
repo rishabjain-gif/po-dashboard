@@ -46,10 +46,7 @@ export default function TATTab() {
 
   const filtered = data.data.filter((row) => {
     const q = search.toLowerCase();
-    const matchQ = !search
-      || row.skuName.toLowerCase().includes(q)
-      || row.poId.toLowerCase().includes(q)
-      || row.skuId.toLowerCase().includes(q);
+    const matchQ = !search || row.poId.toLowerCase().includes(q);
     const matchP = platFilter === 'All' || row.platform === platFilter;
     const matchS = statusFilter === 'All' || row.status === statusFilter;
     return matchQ && matchP && matchS;
@@ -80,7 +77,7 @@ export default function TATTab() {
       <div className="flex flex-wrap gap-3 mb-4 items-center">
         <input
           type="text"
-          placeholder="Search SKU or PO ID…"
+          placeholder="Search PO ID…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="px-3 py-2 text-sm border border-slate-200 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-indigo-400"
@@ -115,13 +112,13 @@ export default function TATTab() {
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-medium">
-              <th className="text-left px-4 py-3 min-w-[120px]">PO ID</th>
-              <th className="text-left px-4 py-3 min-w-[180px]">SKU</th>
+              <th className="text-left px-4 py-3 min-w-[140px]">PO ID</th>
               <th className="text-left px-4 py-3 min-w-[100px]">Platform</th>
               <th className="text-left px-4 py-3 min-w-[120px]">Request Date</th>
               <th className="text-left px-4 py-3 min-w-[120px]">Deadline</th>
               <th className="text-left px-4 py-3 min-w-[130px]">Dispatch Date</th>
               <th className="text-center px-4 py-3 min-w-[80px]">TAT (d)</th>
+              <th className="text-center px-4 py-3 min-w-[70px]">SKUs</th>
               <th className="text-center px-4 py-3 min-w-[90px]">Ordered</th>
               <th className="text-center px-4 py-3 min-w-[90px]">Shipped</th>
               <th className="text-center px-4 py-3 min-w-[130px]">Status</th>
@@ -137,16 +134,10 @@ export default function TATTab() {
             )}
             {filtered.map((row, idx) => (
               <tr
-                key={`${row.poId}-${row.skuId}-${idx}`}
+                key={`${row.poId}-${idx}`}
                 className={`border-b border-slate-100 hover:bg-indigo-50/30 transition-colors ${idx % 2 !== 0 ? 'bg-slate-50/40' : ''}`}
               >
                 <td className="px-4 py-3 font-mono text-xs text-slate-600">{row.poId || '—'}</td>
-                <td className="px-4 py-3">
-                  <div className="font-medium text-slate-800 truncate max-w-[160px]" title={row.skuName}>
-                    {row.skuName}
-                  </div>
-                  <div className="text-xs text-slate-400 mt-0.5">{row.skuId}</div>
-                </td>
                 <td className="px-4 py-3"><PlatBadge p={row.platform} /></td>
                 <td className="px-4 py-3 text-slate-600 text-xs">{row.requestDate}</td>
                 <td className="px-4 py-3 text-slate-600 text-xs">{row.deadline}</td>
@@ -157,6 +148,9 @@ export default function TATTab() {
                 </td>
                 <td className="px-4 py-3 text-center tabular-nums text-slate-700">
                   {row.actualTAT !== null ? row.actualTAT : '—'}
+                </td>
+                <td className="px-4 py-3 text-center tabular-nums text-slate-500 text-xs">
+                  {row.skuCount}
                 </td>
                 <td className="px-4 py-3 text-center tabular-nums text-slate-700">
                   {row.totalQty > 0 ? row.totalQty.toLocaleString() : '—'}
@@ -173,7 +167,7 @@ export default function TATTab() {
         </table>
       </div>
       <p className="text-xs text-slate-400 mt-3">
-        {filtered.length} of {data.data.length} PO lines · Deadline = PO date + 2 days (Sunday excluded)
+        {filtered.length} of {data.data.length} POs · Deadline = PO date + 2 days (Sunday excluded)
       </p>
     </div>
   );
